@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itdan.imooc.o2o.dao.ShopDAO">
+
+   <!-- CREATE TABLE `tb_shop` (
+    `shop_id` int(10) NOT NULL AUTO_INCREMENT,
+    `owner_id` int(10) NOT NULL COMMENT '店铺创始人',
+    `shop_category_id` int(10) DEFAULT NULL,
+    `area_id` int(5) DEFAULT NULL,
+    `shop_name` varchar(256) DEFAULT NULL,
+    `shop_desc` varchar(1024) DEFAULT NULL,
+    `shop_addr` varchar(200) DEFAULT NULL,
+    `phone` varchar(128) DEFAULT NULL,
+    `shop_img` varchar(1024) DEFAULT NULL,
+    `priority` int(3) DEFAULT '0',
+    `create_time` datetime DEFAULT NULL,
+    `last_edit_time` datetime DEFAULT NULL,
+    `enable_status` int(3) DEFAULT '0',
+    `advice` varchar(256) DEFAULT NULL,-->
+<!--添加商铺操作-->
+ <!--values中的值对应Shop类中get方法,注意上下添加的元素要对应-->
+    <insert id="addShop" useGeneratedKeys="true" keyColumn="shop_id" keyProperty="shopId">
+    insert  into
+    tb_shop
+    (owner_id,shop_category_id,area_id,shop_name,shop_desc,shop_addr,
+    phone,shop_img,priority,create_time,last_edit_time,enable_status,advice)
+    values
+    (#{owner.userId},#{shopCategory.shopCategoryId},#{area.areaId},#{shopName},#{shopDesc},
+    #{shopAddr},#{phone},#{shopImg},#{priority},#{createTime},#{lastEditTime},#{enableStatus},#{advice}
+    )
+    </insert>
+
+ <!--更新商铺操作-->
+  <update id="updateShop" parameterType="com.itdan.imooc.o2o.entity.Shop">
+   UPDATE  tb_shop 
+   <set>
+    <if test="shopName!=null">shop_name=#{shopName},</if>
+    <if test="shopDesc!=null">shop_desc=#{shopDesc},</if>
+    <if test="shopAddr!=null">shop_addr=#{shopAddr},</if>
+    <if test="phone!=null">phone=#{phone},</if>
+    <if test="shopImg!=null">shop_img=#{shopImg},</if>
+    <if test="priority!=null">priority=#{priority},</if>
+    <if test="createTime!=null">create_time=#{createTime},</if>
+    <if test="lastEditTime!=null">last_edit_time=#{lastEditTime},</if>
+    <if test="enableStatus!=null">enable_status=#{enableStatus},</if>
+    <if test="advice!=null">advice=#{advice},</if>
+    <if test="shopCategory!=null">shop_category_id=#{shopCategory.shopCategoryId},</if>
+    <if test="area!=null">owner_id=#{area.areaId}</if>
+   </set>
+   where
+   shop_id=#{shopId}
+  </update>
+
+</mapper>

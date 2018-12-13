@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itdan.imooc.o2o.dao.ShopCategoryDAO">
+
+ <!--
+ CREATE TABLE `tb_shop_category` (
+  `shop_category_id` int(11) NOT NULL AUTO_INCREMENT,
+  `shop_category_name` varchar(100) NOT NULL,
+  `shop_category_desc` varchar(1000) DEFAULT NULL,
+  `shop_category_img` varchar(2000) DEFAULT NULL,
+  `priority` int(2) NOT NULL DEFAULT '0',
+  `create_time` datetime DEFAULT NULL,
+  `last_edit_time` datetime DEFAULT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`shop_category_id`),
+  KEY `fk_shop_category_id` (`parent_id`),
+  CONSTRAINT `fk_shop_category_id` FOREIGN KEY (`parent_id`) REFERENCES `tb_shop_category` (`shop_category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+-->
+
+
+ <!--查询商品类型操作-->
+ <!--<if test="shopCategoryCondition.parent!=null"> null不能改成大写，否则会报错-->
+<select id="queryShopCategory"  resultType="com.itdan.imooc.o2o.entity.ShopCategory">
+ SELECT
+ shop_category_id,
+ shop_category_name,
+ shop_category_desc,
+ shop_category_img,
+ priority,
+ create_time,
+ last_edit_time,
+ parent_id
+ FROM  tb_shop_category
+ <where>
+  <if test="shopCategoryCondition.parent!=null">
+   and  parent_id=#{shopCategoryCondition.parent.shopCategoryId}
+  </if>
+ </where>
+ ORDER BY
+ priority DESC
+
+</select>
+
+
+</mapper>
