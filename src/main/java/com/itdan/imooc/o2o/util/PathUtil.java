@@ -10,7 +10,11 @@ public class PathUtil {
     //获取文件的分隔符
     private static String separator=System.getProperty("file.separator");
 
-    //图片的绝对路径
+
+    /**
+     * 获取图片的绝对路径
+     * @return
+     */
     public  static  String getImgBasePath(){
         //获取根路径
         String os=System.getProperty("os.name");
@@ -27,7 +31,12 @@ public class PathUtil {
     }
 
 
-    //获取店铺文件的存储路径
+
+    /**
+     * 获取店铺文件的存储路径
+     * @param shopId
+     * @return
+     */
     public static String getShopBasePath(Long shopId){
      String imagePath="upload/item/shop"+shopId+"/";
      return imagePath.replace("/",separator);

@@ -84,8 +84,30 @@ public class ImgUtil {
      }
 
 
+    /**
+     * stroePath是文件路径还是目录路径
+     * 如果stroePath是文件路径则删除该文件
+     * 如果是目录路径，则删除该路径下的所有文件
+     * @param storeFile
+     */
+    public static  void deleteFileOrPath(String storeFile){
+          File fileOrPath=new File(PathUtil.getImgBasePath()+storeFile);
+          if (fileOrPath.exists()){//测试此抽象路径名表示的文件或目录是否存在。
+            if(fileOrPath.isDirectory()){//测试此抽象路径名表示的文件是否是一个目录
+               File [] list=fileOrPath.listFiles();//返回一个抽象路径名数组，这些路径名表示此抽象路径名表示的目录中的文件。
+                for (int i = 0; i <list.length ; i++) {
+                    list[i].delete();
+                }
+            }
+            fileOrPath.delete();//将文件删除完了之后，再将目录也删除掉
+          }
+    }
 
 
+
+
+
+/*
     public static void main(String[] args) throws Exception{
 
 
@@ -97,7 +119,9 @@ public class ImgUtil {
                 .outputQuality(0.8f)
                 .toFile(new File("C:/Users/WIN8/Pictures/xiaohuangren.jpg"));
 
-    }
+    }*/
+
+
 
 
 }

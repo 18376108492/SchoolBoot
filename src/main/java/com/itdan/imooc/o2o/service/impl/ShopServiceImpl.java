@@ -26,12 +26,46 @@ public class ShopServiceImpl implements ShopService {
     @Autowired
     private ShopDAO shopDAO;
 
+
+    @Override
+    public ShopExection modiftShop(Shop shop, InputStream shopImgInputStream, String fileName) throws ShopOperationExecption{
+       //先判断传入的值是否为空
+        if(shop==null ||shop.getShopId()==null){
+             return   new ShopExection(ShopStateEnum.NULL_SHOP);
+        }
+        //1.先判断shop中的shopImg是否为空，如果不为空先将其中的文件路径清空
+        try {
+            if (shopImgInputStream != null && fileName != null && !"".equals(fileName)) {
+                Shop tempShop = shopDAO.queryById(shop.getShopId());
+                if (tempShop.getShopImg() != null) {
+                    ImgUtil.deleteFileOrPath(shop.getShopImg());
+                }
+                addShopImg(shop, shopImgInputStream, fileName);
+            }
+            //2.跟新店铺信息
+            shop.setLastEditTime(new Date());
+            int row = shopDAO.updateShop(shop);
+            if (row <= 0) {
+                return new ShopExection(ShopStateEnum.INNER_EEROR);
+            } else {
+                Shop newShop = shopDAO.queryById(shop.getShopId());
+                return new ShopExection(ShopStateEnum.SUCCESS, shop);
+            }
+        }catch (Exception e){
+            throw  new ShopOperationExecption("modiftShopError:"+e.getMessage());
+        }
+    }
+
+    @Override
+    public Shop queryById(Long shopId) {
+        return shopDAO.queryById(shopId);
+    }
+
     @Override
     @Transactional//事务标签
     //如果抛出的异常不是RuntimeException或者其子类时，事务是不会回滚的。
     public ShopExection addShop(Shop shop,
                                 InputStream shopImgInputStream,String fileName) {
-
         //判断传入的参数
         if (shop == null) {
             return new ShopExection(ShopStateEnum.NULL_SHOP);

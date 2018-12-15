@@ -50,6 +50,35 @@ public class ShopManagementController {
     @Autowired
     private AreaService areaService;
 
+
+    /**
+     * 更新商品信息时，根据商品的id查询出数据并将数据返回页面
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/getShopById",method = {RequestMethod.GET})
+    @ResponseBody
+    private Map<String,Object>  getShopById(HttpServletRequest request){
+        Map<String,Object> modelMap=new HashMap<>();
+        Long shopId=HttpServletRequestUtil.getLong(request,"shopId");
+        if(shopId>-1){
+            try {
+               Shop shop=shopService.queryById(shopId);//获取要修改的店铺信息
+               List<Area> areaList=areaService.getAllArea();//获取区域信息
+               modelMap.put("area",areaList);
+               modelMap.put("shop",shop);
+               modelMap.put("success",true);
+            }catch (Exception e){
+                modelMap.put("errorMsg","修改店铺出错"+e.getMessage());
+                modelMap.put("success",false);
+            }
+        }else {
+            modelMap.put("errorMsg","修改店铺出错:传入的shopIp小于0");
+            modelMap.put("success",false);
+        }
+        return modelMap;
+    }
+
     /**
      * 查询相应的区域和商品类型信息，并返回给Json数据给注册页面
      * @return
@@ -122,8 +151,7 @@ public class ShopManagementController {
 
         //2.注册店铺
         if (shop != null && shopImg != null) {
-            PersonInfo owner =new PersonInfo();
-            owner.setUserId(1L);
+            PersonInfo owner =(PersonInfo) request.getSession().getAttribute("user");
             shop.setOwner(owner);
              //添加店铺
             //CommonsMultipartFile.getInputStream,通过InPutStream转成File
@@ -131,6 +159,16 @@ public class ShopManagementController {
                 ShopExection exection=shopService.addShop(shop,shopImg.getInputStream(),shopImg.getOriginalFilename());
                 if (exection.getState()==ShopStateEnum.CKECK.getState()){
                     map.put("success",true);
+                    //该用户可以操作的店铺列表
+                    List<Shop>shopList=(List<Shop>) request.getSession().getAttribute("shopList");
+                     if(shopList==null || shopList.size()==0){
+                       shopList=new ArrayList<Shop>();
+                       shopList.add(exection.getShop());
+                       request.getSession().setAttribute("shopList",shopList);
+                     }else {
+                         shopList.add(exection.getShop());
+                         request.getSession().setAttribute("shopList",shopList);
+                     }
                 }else {
                     map.put("success", false);
                     map.put("errorMsg", exection.getStateInfo());
@@ -150,6 +188,77 @@ public class ShopManagementController {
         return map;
     }
 
+
+    /**
+     * 更新店铺
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/modiftShopMsg", method = {RequestMethod.POST})
+    @ResponseBody
+    private Map<String, Object> modiftShopMsg(HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        //验证码校验码
+        if(!CodeUtil.checkVerifyCode(request)){
+            map.put("success", false);
+            map.put("errorMsg", "验证码输入错误");
+            return map;
+        }
+        //1.接收并转化相应的参数，包括店铺信息和图片信息
+        String shopStr = HttpServletRequestUtil.getString(request, "shopStr");
+        System.out.println(shopStr);
+        ObjectMapper mapper = new ObjectMapper(); // create once, reuse
+        Shop shop = null;
+        try {
+            shop = mapper.readValue(shopStr, Shop.class);
+        } catch (Exception e) {
+            map.put("success", false);
+            map.put("errorMsg", e.getMessage());
+            return map;
+        }
+        //接收店铺图片
+        CommonsMultipartFile shopImg = null;
+        CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver(
+                request.getSession().getServletContext());
+        if (commonsMultipartResolver.isMultipart(request)) {
+            MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest) request;
+            shopImg = (CommonsMultipartFile) multipartHttpServletRequest.getFile("shopImg");
+        }
+
+        //2.修改店铺
+        if (shop != null &&shop.getShopId()!=null ) {
+            //从session中获取登入用户
+            PersonInfo owner =(PersonInfo) request.getSession().getAttribute("user");
+            shop.setOwner(owner);
+            //修改店铺
+            //CommonsMultipartFile.getInputStream,通过InPutStream转成File
+            try {
+                ShopExection exection;
+                if(shopImg==null){
+                    exection=  shopService.modiftShop(shop,null,null);//如果传入的图片为空，只对其shop对象做处理
+                }else {
+                    exection=shopService.modiftShop(shop,shopImg.getInputStream(),shopImg.getOriginalFilename());
+                }
+                if (exection.getState()==ShopStateEnum.SUCCESS.getState()){
+                    map.put("success",true);
+                }else {
+                    map.put("success", false);
+                    map.put("errorMsg", exection.getStateInfo());
+                }
+                return map;
+            }catch (Exception e){
+                map.put("success", false);
+                map.put("errorMsg", e.getMessage());
+            }
+        } else {
+            map.put("success", false);
+            map.put("errorMsg", "注册店铺,请输入id");
+        }
+
+        //3.返回结果
+
+        return map;
+    }
 
 
     /**
